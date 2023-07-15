@@ -1,0 +1,31 @@
+.stage-warpper {
+  width: 100%;
+  height: calc(100vh-165px);
+  display: flex;
+  .scene-img {
+    width: 80%;
+    img {
+      width: 100%;
+    }
+  }
+  .feature-list {
+    flex: 1;
+    padding-left: 3%;
+    display: flex;
+    flex-direction: column;
+    .title {
+      color: rgba(0, 0, 0, 0.88);
+      font-weight: 600;
+      font-size: 20px;
+      line-height: 32px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      margin-bottom: 10px;
+    }
+    .upload-btn {
+      width: 50%;
+      margin-left: 25%
+    }
+  }
+}
