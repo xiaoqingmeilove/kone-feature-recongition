@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
+import { request } from 'umi'
 import { InferenceSession, Tensor } from "onnxruntime-web";
 import npyjs from "npyjs";
 
@@ -67,6 +68,26 @@ const StageWarpper = ({ fileName }: StageWarpperProps ) => {
     );
   }
 
+  const loadFeatures = async () => {
+    const result = await request('http://localhost:5000/api/get-all-features', {
+      method: 'get',
+    })
+    const resourceName = fileName?.split(".")[0]
+    const featureList = result.data.filter((item:string)=>{
+      if(item.split("/")[1].split("-")[0] === resourceName){
+        return true
+      }
+      return false
+    }).map((item:string,index:number)=>{
+      return  {
+        id: item.split("/")[1],
+        imgSrc: `http://localhost:5000/${item}`,
+        timestamps: new Date().getTime() + index
+      }
+    })
+    setSelectedEleList(featureList)
+  }
+
   useEffect(() => {
     // Initialize the ONNX model
     const initModel = async () => {
@@ -90,6 +111,9 @@ const StageWarpper = ({ fileName }: StageWarpperProps ) => {
     // Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
     //   (embedding) => setTensor(embedding)
     // );
+
+    // load features
+    loadFeatures();
   }, []);
 
   const runONNX = async () => {

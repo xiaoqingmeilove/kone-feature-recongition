@@ -69,7 +69,7 @@ const Stage = () => {
         <span className="title">Features</span>
         {
           selectedEleList && selectedEleList.length > 0 && selectedEleList.map((ele, idx) =>
-            <Thumbnail key={ele.timestamps} imgSrc={ele.imgSrc} idx={idx} />
+            <Thumbnail key={ele.timestamps} imgSrc={ele.imgSrc} idx={idx} name={ele.id}/>
           )
         }
         <Button className="upload-btn" type="primary" onClick={handleUpload}>Upload</Button>
