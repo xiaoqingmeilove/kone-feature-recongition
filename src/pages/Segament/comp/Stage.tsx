@@ -11,6 +11,7 @@ import Tool from "./Tool";
 import { modelInputProps } from "@/utils/interfaces";
 import AppContext from "./context/createContext";
 import './stage.less'
+import { UploadFeature } from '@/services/apis'
 
 import Thumbnail from "./seletedImgPreview/Thumbnail";
 import PreviewModal from "./seletedImgPreview/PreviewModal";
@@ -21,7 +22,7 @@ const Stage = () => {
     clicks: [clicks, setClicks],
     image: [image],
     // optedFileName: [optedFileName],
-    selectedEleList: [selectedEleList]
+    selectedEleList: [selectedEleList, setSelectedEleList]
   } = useContext(AppContext)!;
 
   const getClick = (x: number, y: number): modelInputProps => {
@@ -47,31 +48,42 @@ const Stage = () => {
   }, 15);
 
   const handleUpload = async () => {
-    await request('http://localhost:5000/api/upload-feature', {
-      method: 'post',
-      data: {
-        payload: selectedEleList.map(item => {
-          return {
-            name: item.id,
-            data: item.imgSrc
-          }
-        })
-      },
+    // await request('http://localhost:5000/api/upload-feature', {
+    //   method: 'post',
+    //   data: {
+    //     payload: selectedEleList.map(item => {
+    //       return {
+    //         name: item.id,
+    //         data: item.imgSrc
+    //       }
+    //     })
+    //   },
+    // })
+    const uploadList = selectedEleList.filter(item => item.from === 'add').map(item => {
+      return {
+        name: item.id,
+        data: item.imgSrc
+      }
     })
+    await UploadFeature({payload: uploadList})
+    selectedEleList.forEach(item => item.from = 'exist')
+    setSelectedEleList(selectedEleList)
   }
 
   return (
-    <div className='stage-warpper'>
+    <div className='stage'>
       <div className='scene-img'>
         <Tool handleMouseMove={handleMouseMove} />
       </div>
       <div className="feature-list">
-        <span className="title">Features</span>
-        {
-          selectedEleList && selectedEleList.length > 0 && selectedEleList.map((ele, idx) =>
-            <Thumbnail key={ele.timestamps} imgSrc={ele.imgSrc} idx={idx} name={ele.id}/>
-          )
-        }
+        <div className="title">Features</div>
+        <div className="list-wrapper">
+          {
+            selectedEleList && selectedEleList.length > 0 && selectedEleList.map((ele, idx) =>
+              <Thumbnail key={ele.timestamps} imgSrc={ele.imgSrc} idx={idx} name={ele.id} from={ele.from} />
+            )
+          }
+        </div>
         <Button className="upload-btn" type="primary" onClick={handleUpload}>Upload</Button>
       </div>
       <PreviewModal />

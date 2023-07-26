@@ -1,11 +1,12 @@
-.stage-warpper {
+.stage {
   width: 100%;
-  height: calc(100vh-165px);
+  height: calc(100vh - 165px);
   display: flex;
   .scene-img {
     width: 80%;
     img {
-      width: 100%;
+      max-width: 100%;
+      max-height: calc(100vh - 165px);
     }
   }
   .feature-list {
@@ -23,9 +24,34 @@
       text-overflow: ellipsis;
       margin-bottom: 10px;
     }
+    .list-wrapper {
+      flex: 1;
+      flex-direction: column;
+      overflow: auto;
+    }
     .upload-btn {
+      margin-top: 10px;
       width: 50%;
       margin-left: 25%
     }
   }
+}
+
+
+::-webkit-scrollbar {
+  /*滚动条整体样式*/
+  width: 4px; /*高宽分别对应横竖滚动条的尺寸*/
+  height: 1px;
+}
+::-webkit-scrollbar-thumb {
+  /*滚动条里面小方块*/
+  border-radius: 10px;
+  box-shadow: inset 0 0 5px rgba(97, 184, 179, 0.1);
+  background: #78b4b4;
+}
+::-webkit-scrollbar-track {
+  /*滚动条里面轨道*/
+  box-shadow: inset 0 0 5px rgba(87, 175, 187, 0.1);
+  border-radius: 10px;
+  background: #ededed;
 }

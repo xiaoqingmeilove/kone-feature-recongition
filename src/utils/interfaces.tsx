@@ -48,10 +48,12 @@ export interface ToolProps {
 export interface selectEle {
   id: string,
   imgSrc: string,
+  from: string,
   timestamps: number
 }
 
 export interface ThumbnailProps {
   imgSrc: string,
-  idx: number
+  idx: number,
+  from: string
 }

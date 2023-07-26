@@ -3,27 +3,39 @@ import { request } from 'umi'
 import { PageContainer } from '@ant-design/pro-components';
 import { imgItem } from '@/utils/interfaces'
 import { Spin } from 'antd';
+import { getAllFiles } from '@/services/apis'
 import ImgCard from './comp/ImgCard'
 import ConfirmModal from '@/components/ConfirmModal';
+import { WEB_SERVE } from '@/utils/constants';
 import "./index.less";
 
 const ImgList: React.FC = () => {
   const [imgList, setImgList] = useState<Array<imgItem>>([]);
   const [loading, setLoading] = useState<boolean>(true)
+  const [current, setCurrent] = useState<number>(0)
   const initImgList = async () => {
     setLoading(true)
-    const result = await request('http://localhost:5000/api/get-all-files', {
-      method: 'get'
-    })
-    const imgList = result.data.map((item:string) => {
-      return {
-        src: `http://localhost:5000/${item}`,
-        fileName: item.split("/")[1],
-        segamentCount: 0
-      }
-    })
-    setImgList(imgList)
-    setLoading(false)
+    // const result = await request('http://localhost:5000/api/get-all-files', {
+    //   method: 'get'
+    // })
+    try {
+      const result = await getAllFiles({current, pageSize: 10});
+      console.log('调试 ---- ', result);
+      console.log('result', result.data)
+      setCurrent(current + 1)
+      const imgList = result.data.map((item:string) => {
+        return {
+          src: `${WEB_SERVE}/${item}`,
+          fileName: item.split("/")[1],
+          segamentCount: 0
+        }
+      })
+      setImgList(imgList)
+      setLoading(false)
+    } catch (e) {
+      console.log('e !!!! --- ', e )
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
