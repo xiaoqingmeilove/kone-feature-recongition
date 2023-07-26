@@ -3,13 +3,15 @@ import { PageContainer } from '@ant-design/pro-components';
 import { InboxOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import { message, Upload } from 'antd';
+import { WEB_SERVE } from '@/utils/constants';
 
 const { Dragger } = Upload;
 
 const props: UploadProps = {
   name: 'files',
   multiple: true,
-  action: 'http://localhost:5000/api/upload-files',
+  directory: true,
+  action: `${WEB_SERVE}/api/upload-files`,
   onChange(info) {
     const { status } = info.file;
     if (status !== 'uploading') {

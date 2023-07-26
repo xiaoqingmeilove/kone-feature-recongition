@@ -11,12 +11,6 @@ const { Meta } = Card;
 const ImgCard = ({ imgItem, deleteHandler }: ImgCardProps) => {
   const { src, fileName, segamentCount } = imgItem
   const editHandler = async () => {
-    await request('http://localhost:5000/api/generate-npy', {
-      method: 'post',
-      data: {
-        fileName,
-      },
-    })
     history.push(`/imgSegament/${fileName}`)
   }
   // const deleteHandler = () => {}
@@ -25,8 +19,8 @@ const ImgCard = ({ imgItem, deleteHandler }: ImgCardProps) => {
     <Card
       className="img-card-warpper"
       title={fileName}
-      style={{ width: '20%' }}
-      bodyStyle={{ display: 'flex', 'flex-direction': 'column', 'justify-content': 'space-between' }}
+      style={{ width: '18.5%' }}
+      bodyStyle={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
       actions={[
         <EditOutlined key="edit" onClick={editHandler} />,
         <DeleteOutlined key="del" onClick={deleteHandler} />,

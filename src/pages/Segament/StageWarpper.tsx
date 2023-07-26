@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import { request } from 'umi'
 import { InferenceSession, Tensor } from "onnxruntime-web";
+import { Spin } from 'antd';
 import npyjs from "npyjs";
 
 import { handleImageScale } from "./comp/helpers/scaleHelper";
@@ -8,8 +9,12 @@ import { modelScaleProps, StageWarpperProps } from "@/utils/interfaces";
 import { onnxMaskToImage } from "./comp/helpers/maskUtils";
 import { modelData } from "./comp/helpers/onnxModelAPI";
 
+import { getAllFeatures, GenerateNpy } from '@/services/apis'
+import { WEB_SERVE } from "@/utils/constants";
+
 import AppContext from "./comp/context/createContext";
 import Stage from "./comp/Stage"
+import './stageWarpper.less'
 
 const ort = require("onnxruntime-web");
 const MODEL_DIR = "/demo/model/sam_onnx_quantized_example.onnx";
@@ -24,6 +29,7 @@ const StageWarpper = ({ fileName }: StageWarpperProps ) => {
   const [model, setModel] = useState<InferenceSession | null>(null); // ONNX model
   const [tensor, setTensor] = useState<Tensor | null>(null); // Image embedding tensor
   const [modelScale, setModelScale] = useState<modelScaleProps | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Decode a Numpy file into a tensor.
   const loadNpyTensor = async (tensorFile: string, dType: string) => {
@@ -55,24 +61,26 @@ const StageWarpper = ({ fileName }: StageWarpperProps ) => {
   };
 
   const loadImgAndTensor = async () => {
-    const imgPath = `http://localhost:5000/uploads/${fileName}`
-    const embeddingPath = `http://localhost:5000/npy/${fileName?.split(".")[0]}.npy`
-    // const imgPath = `/demo/img/${fileName}`
-    // const embeddingPath = `/demo/embedding/${fileName?.split(".")[0]}_embedding.npy`
-    const url = new URL(imgPath);
-    loadImage(url);
-
-    // Load the Segment Anything pre-computed embedding
-    Promise.resolve(loadNpyTensor(embeddingPath, "float32")).then(
-      (embedding) => setTensor(embedding)
-    );
+    try {
+      const { data: embeddingFile } = await GenerateNpy({fileName})
+      const imgPath = `${WEB_SERVE}/uploads/${fileName}`
+      const embeddingPath = `${WEB_SERVE}/${embeddingFile}`
+      const url = new URL(imgPath);
+      loadImage(url);
+      // Load the Segment Anything pre-computed embedding
+      Promise.resolve(loadNpyTensor(embeddingPath, "float32")).then(
+        (embedding) => setTensor(embedding)
+      );
+    } catch (e) {
+      return false
+    }
   }
 
   const loadFeatures = async () => {
-    const result = await request('http://localhost:5000/api/get-all-features', {
-      method: 'get',
-    })
+    const result = await getAllFeatures({id: fileName});
+    console.log('调试 --- ', result);
     const resourceName = fileName?.split(".")[0]
+    console.log('result', result.data)
     const featureList = result.data.filter((item:string)=>{
       if(item.split("/")[1].split("-")[0] === resourceName){
         return true
@@ -81,10 +89,12 @@ const StageWarpper = ({ fileName }: StageWarpperProps ) => {
     }).map((item:string,index:number)=>{
       return  {
         id: item.split("/")[1],
-        imgSrc: `http://localhost:5000/${item}`,
+        imgSrc: `${WEB_SERVE}/${item}`,
+        from: 'exist',
         timestamps: new Date().getTime() + index
       }
     })
+    console.log('featureList', featureList)
     setSelectedEleList(featureList)
   }
 
@@ -102,18 +112,15 @@ const StageWarpper = ({ fileName }: StageWarpperProps ) => {
     };
     initModel();
 
-    loadImgAndTensor();
-    // // Load the image
-    // const url = new URL(IMAGE_PATH, location.origin);
-    // loadImage(url);
-
-    // // Load the Segment Anything pre-computed embedding
-    // Promise.resolve(loadNpyTensor(IMAGE_EMBEDDING, "float32")).then(
-    //   (embedding) => setTensor(embedding)
-    // );
-
-    // load features
-    loadFeatures();
+    setLoading(true);
+    Promise.allSettled([loadImgAndTensor(), loadFeatures()]).then(res => {
+      console.log('调试 --- ', res)
+      setLoading(false);
+    }).catch(err => {
+      console.log('调试 --- ', err)
+      setLoading(false);
+    })
+    
   }, []);
 
   const runONNX = async () => {
@@ -165,6 +172,7 @@ const StageWarpper = ({ fileName }: StageWarpperProps ) => {
         const selectedEleObj = {
           id: `${fileName?.split(".")[0]}-${new Date().getTime()}.png`,
           imgSrc: canvas.toDataURL(),
+          from: 'add',
           timestamps: new Date().getTime()
         }
 
@@ -190,8 +198,13 @@ const StageWarpper = ({ fileName }: StageWarpperProps ) => {
   }, [clicks]);
 
   return (
-    <div>
-      {/* <span>Hello world222</span> */}
+    <div className="stage-warpper">
+      {
+        loading &&
+        <div className="loading-mask">
+          <Spin tip="Loading..." size="large" className='page-loading' />
+        </div>
+      }
       <Stage />
     </div>
   )

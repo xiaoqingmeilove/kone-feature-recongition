@@ -1,0 +1,1 @@
+export const WEB_SERVE='http://47.102.196.15:5000'
